@@ -1,26 +1,41 @@
-﻿version: '3.6'
+﻿version: '3.9'
 services:
-  pgadmin:
-    container_name: pgadmin
-    restart: unless-stopped
+  admin:
     image: dpage/pgadmin4:latest
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    networks:
+      - infrastructure
     environment:
       PGADMIN_DEFAULT_EMAIL: mail@gavanlamb.com
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 8000
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - 8000:8000
-    networks:
-      - infrastructure
-    labels:
-      traefik.enable: true
-      traefik.http.routers.pgadmin.rule: Host(`pgadmin.gavanlamb.com`)
-      traefik.http.routers.pgadmin.entrypoints: websecure
-      traefik.http.routers.pgadmin.tls.certresolver: letsencrypt
-      traefik.http.routers.pgadmin.service: pgadmin_svc
-      traefik.http.services.pgadmin_svc.loadBalancer.server.port: 8000
+    deploy:
+      replicas: 1
+      rollback_config:
+        parallelism: 0
+        failure_action: continue
+        order: stop-first
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: stop-first
+      labels:
+        traefik.enable: 'true'
+        traefik.http.routers.pgadmin.rule: Host(`pgadmin.gavanlamb.com`)
+        traefik.http.routers.pgadmin.entrypoints: websecure
+        traefik.http.routers.pgadmin.tls.certresolver: letsencrypt
+        traefik.http.routers.pgadmin.service: pgadmin
+        traefik.http.services.pgadmin.loadBalancer.server.port: 8000
+    logging:
+      driver: loki
+      options:
+        loki-url: http://192.168.50.19:3100/loki/api/v1/push
+        loki-retries: 5
+        loki-batch-size: 20
+        loki-tenant-id: 1
+        loki-external-labels: "job=-pgadmin"
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8000/ || exit 1
       interval: 10s
@@ -29,19 +44,36 @@ services:
       start_period: 60s
 
   postgres152:
-    container_name: postgres152
-    restart: unless-stopped
     image: postgres:15.2-alpine
+    volumes:
+      - postgres152:/var/lib/postgresql/data
+    networks:
+      - infrastructure
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${PG152_PASSWORD}
       PGPORT: 8001
       PGDATA: /var/lib/postgresql/data
-    networks:
-      - infrastructure
-    volumes:
-      - postgres152:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      rollback_config:
+        parallelism: 0
+        failure_action: continue
+        order: stop-first
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: stop-first
+    logging:
+      driver: loki
+      options:
+        loki-url: http://192.168.50.19:3100/loki/api/v1/push
+        loki-retries: 5
+        loki-batch-size: 20
+        loki-tenant-id: 1
+        loki-external-labels: "job=-postgres152"
     healthcheck:
       test: pg_isready --quiet --dbname=$${POSTGRES_DB} --username=$${POSTGRES_USER} || exit 1
       interval: 10s
@@ -52,8 +84,16 @@ services:
 volumes:
   pgadmin:
     name: pgadmin
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.50.19,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14"
+      device: ":/share/docker/pgadmin"
   postgres152:
     name: postgres152
+    driver_opts:
+      type: "nfs"
+      o: "addr=192.168.50.19,rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14"
+      device: ":/share/docker/postgres152"
 
 networks:
   infrastructure:
