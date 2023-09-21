@@ -51,7 +51,7 @@ services:
       - infrastructure
     environment:
       POSTGRES_DB: postgres
-      POSTGRES_USER: admin
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${PG152_PASSWORD}
       PGPORT: 8001
       PGDATA: /var/lib/postgresql/data
