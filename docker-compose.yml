@@ -30,7 +30,7 @@ services:
         traefik.http.services.pgadmin.loadBalancer.server.port: 8000
     logging:
       options:
-        loki-external-labels: "job=-pgadmin"
+        loki-external-labels: "job=pgadmin"
 
   postgres152:
     image: postgres:15.2-alpine
@@ -57,7 +57,7 @@ services:
         order: stop-first
     logging:
       options:
-        loki-external-labels: "job=-postgres152"
+        loki-external-labels: "job=postgres152"
 
   postgres152-exporter:
     image: prometheuscommunity/postgres-exporter
@@ -82,7 +82,7 @@ services:
         prometheus.path: /metrics
     logging:
       options:
-        loki-external-labels: "job=-postgres152-exporter"
+        loki-external-labels: "job=postgres152-exporter"
 
 volumes:
   pgadmin:
