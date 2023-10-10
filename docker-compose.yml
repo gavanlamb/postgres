@@ -40,8 +40,8 @@ services:
       - infrastructure
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${PG152_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGPORT: 8001
       PGDATA: /var/lib/postgresql/data
     deploy:
@@ -64,7 +64,7 @@ services:
     networks:
       - infrastructure
     environment:
-      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${PG152_PASSWORD}@postgres152:8001/shop?sslmode=disable"
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres152:8001/shop?sslmode=disable"
     deploy:
       replicas: 1
       rollback_config:
