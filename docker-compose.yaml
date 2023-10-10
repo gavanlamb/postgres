@@ -29,19 +29,8 @@ services:
         traefik.http.routers.pgadmin.service: pgadmin
         traefik.http.services.pgadmin.loadBalancer.server.port: 8000
     logging:
-      driver: loki
       options:
-        loki-url: http://192.168.50.19:3100/loki/api/v1/push
-        loki-retries: 5
-        loki-batch-size: 20
-        loki-tenant-id: 1
         loki-external-labels: "job=-pgadmin"
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8000/ || exit 1
-      interval: 10s
-      timeout: 9s
-      retries: 10
-      start_period: 60s
 
   postgres152:
     image: postgres:15.2-alpine
@@ -50,7 +39,7 @@ services:
     networks:
       - infrastructure
     environment:
-      POSTGRES_DB: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${PG152_PASSWORD}
       PGPORT: 8001
@@ -67,19 +56,33 @@ services:
         failure_action: rollback
         order: stop-first
     logging:
-      driver: loki
       options:
-        loki-url: http://192.168.50.19:3100/loki/api/v1/push
-        loki-retries: 5
-        loki-batch-size: 20
-        loki-tenant-id: 1
         loki-external-labels: "job=-postgres152"
-    healthcheck:
-      test: pg_isready --quiet --dbname=$${POSTGRES_DB} --username=$${POSTGRES_USER} || exit 1
-      interval: 10s
-      timeout: 10s
-      start_period: 30s
-      retries: 3
+
+  postgres152-exporter:
+    image: prometheuscommunity/postgres-exporter
+    networks:
+      - infrastructure
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${PG152_PASSWORD}@postgres152:8001/shop?sslmode=disable"
+    deploy:
+      replicas: 1
+      rollback_config:
+        parallelism: 0
+        failure_action: continue
+        order: stop-first
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: stop-first
+      labels:
+        prometheus.job: postgres152
+        prometheus.port: 9187
+        prometheus.path: /metrics
+    logging:
+      options:
+        loki-external-labels: "job=-postgres152-exporter"
 
 volumes:
   pgadmin:
