@@ -12,6 +12,9 @@ services:
       PGADMIN_LISTEN_PORT: 8000
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - "node.labels.platform==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
@@ -46,6 +49,9 @@ services:
       PGDATA: /var/lib/postgresql/data
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - "node.labels.platform==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
@@ -67,6 +73,9 @@ services:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres152:8001/shop?sslmode=disable"
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - "node.labels.platform==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
