@@ -14,7 +14,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - "node.labels.os==linux"
+          - "node.platform.os==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
@@ -51,7 +51,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - "node.labels.os==linux"
+          - "node.platform.os==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
@@ -75,7 +75,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - "node.labels.os==linux"
+          - "node.platform.os==linux"
       rollback_config:
         parallelism: 0
         failure_action: continue
