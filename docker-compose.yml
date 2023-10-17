@@ -5,7 +5,7 @@ services:
     volumes:
       - pgadmin:/var/lib/pgadmin
     networks:
-      - infrastructure
+      - services
     environment:
       PGADMIN_DEFAULT_EMAIL: mail@gavanlamb.com
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
@@ -40,7 +40,7 @@ services:
     volumes:
       - postgres152:/var/lib/postgresql/data
     networks:
-      - infrastructure
+      - services
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USERNAME}
@@ -68,7 +68,7 @@ services:
   postgres152-exporter:
     image: prometheuscommunity/postgres-exporter
     networks:
-      - infrastructure
+      - services
     environment:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres152:8001/${POSTGRES_DB}?sslmode=disable"
     deploy:
@@ -108,6 +108,6 @@ volumes:
       device: ":/share/docker/postgres/postgres152"
 
 networks:
-  infrastructure:
-    name: infrastructure
+  services:
+    name: services
     external: true
