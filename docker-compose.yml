@@ -72,7 +72,7 @@ services:
     environment:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres152:3900/${POSTGRES_DB}?sslmode=disable"
     command:
-      - --web.listen-address=":4000"
+      - --web.listen-address=:4000
       - --log.format=json
     deploy:
       replicas: 1
